@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Expense Tracker</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <!-- Страница авторизации -->
+    <div id="authPage" class="auth-page">
+        <div class="auth-container">
+            <div class="auth-header">
+                <h1>💰 Smart Expense Tracker</h1>
+                <p>Управляй своими финансами легко</p>
+            </div>
+            
+            <div class="auth-tabs">
+                <button class="tab-btn active" onclick="showAuthTab('login')">Вход</button>
+                <button class="tab-btn" onclick="showAuthTab('register')">Регистрация</button>
+            </div>
+            
+            <!-- Форма входа -->
+            <form id="loginForm" class="auth-form">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" required placeholder="example@mail.com">
+                </div>
+                <div class="form-group">
+                    <label>Пароль</label>
+                    <input type="password" id="loginPassword" required placeholder="Введите пароль">
+                </div>
+                <button type="submit" class="btn btn-primary">Войти</button>
+                <div id="loginError" class="error-message"></div>
+            </form>
+            
+            <!-- Форма регистрации -->
+            <form id="registerForm" class="auth-form" style="display: none;">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="registerEmail" required placeholder="example@mail.com">
+                </div>
+                <div class="form-group">
+                    <label>Имя пользователя</label>
+                    <input type="text" id="registerUsername" minlength="3" required placeholder="username">
+                </div>
+                <div class="form-group">
+                    <label>Пароль (минимум 8 символов)</label>
+                    <input type="password" id="registerPassword" minlength="8" required placeholder="Создайте пароль">
+                </div>
+                <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+                <div id="registerError" class="error-message"></div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Главная страница (дашборд) -->
+    <div id="dashboardPage" style="display: none;">
+        <header class="header">
+            <div class="container">
+                <div class="header-content">
+                    <h1>💰 Smart Expense Tracker</h1>
+                    <div class="user-menu">
+                        <span id="userName" class="user-name"></span>
+                        <button onclick="logout()" class="btn btn-logout">Выйти</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <main class="main-content">
+            <div class="container">
+                <!-- Статистика -->
+                <section class="summary-section">
+                    <div class="summary-cards">
+                        <div class="card summary-card">
+                            <div class="card-icon">💸</div>
+                            <div class="card-content">
+                                <h3>Расходы за месяц</h3>
+                                <p class="card-value" id="totalExpenses">0 ₽</p>
+                            </div>
+                        </div>
+                        
+                        <div class="card summary-card">
+                            <div class="card-icon">📊</div>
+                            <div class="card-content">
+                                <h3>Транзакций</h3>
+                                <p class="card-value" id="totalTransactions">0</p>
+                            </div>
+                        </div>
+                        
+                        <div class="card summary-card">
+                            <div class="card-icon">💳</div>
+                            <div class="card-content">
+                                <h3>Средний чек</h3>
+                                <p class="card-value" id="avgTransaction">0 ₽</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Добавление расхода -->
+                <section class="add-expense-section">
+                    <div class="card">
+                        <h2>➕ Добавить новый расход</h2>
+                        <form id="addExpenseForm" class="expense-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Сумма (₽)</label>
+                                    <input type="number" id="expenseAmount" step="0.01" min="0.01" required placeholder="100.00">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Дата</label>
+                                    <input type="date" id="expenseDate" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Категория</label>
+                                    <select id="expenseCategory" required>
+                                        <option value="">Выберите категорию</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Описание</label>
+                                <input type="text" id="expenseDescription" maxlength="500" required placeholder="Например: Продукты в магазине">
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Добавить расход</button>
+                        </form>
+                    </div>
+                </section>
+                
+                <!-- Графики -->
+                <section class="charts-section">
+                    <div class="charts-grid">
+                        <div class="card chart-card">
+                            <h2>📊 Расходы по категориям</h2>
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                        
+                        <div class="card chart-card">
+                            <h2>📈 Топ категорий</h2>
+                            <div id="topCategories" class="top-categories">
+                                <p class="no-data">Нет данных для отображения</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Список расходов -->
+                <section class="expenses-section">
+                    <div class="card">
+                        <h2>📝 История расходов</h2>
+                        <div id="expensesList" class="expenses-list">
+                            <p class="loading">Загрузка...</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+    
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
